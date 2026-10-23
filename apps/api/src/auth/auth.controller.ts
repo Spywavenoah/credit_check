@@ -1,7 +1,6 @@
-import { Controller, Post, Body, Get, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, UnauthorizedException } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { LoginDto } from './dto/login.dto';
-import { SetupTwoFactorDto } from './dto/setup-two-factor.dto';
+import { LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyTwoFactorDto } from './dto';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -21,8 +20,32 @@ export class AuthController {
     };
   }
 
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return {
+      success: true,
+      message: `Password reset link generated for ${dto.email}`,
+    };
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return {
+      success: true,
+      message: 'Password reset successful',
+    };
+  }
+
+  @Post('verify-2fa')
+  async verify2fa(@Body() dto: VerifyTwoFactorDto) {
+    return {
+      success: true,
+      message: 'Two-factor verification successful',
+    };
+  }
+
   @Post('setup-2fa')
-  async setupTwoFactor(@Body() dto: SetupTwoFactorDto) {
+  async setup2fa(@Body() body: { userId: string }) {
     return {
       secret: 'JBSWY3DPEHPK3PXP',
       qrCodeUrl: 'otpauth://totp/CreditCheck:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=CreditCheck',
@@ -30,17 +53,22 @@ export class AuthController {
     };
   }
 
-  @Post('verify-2fa')
-  async verifyTwoFactor(@Body() body: { code: string }) {
-    return {
-      success: true,
-      message: 'Two-factor verification successful',
-    };
+  @Post('disable-2fa')
+  async disable2fa(@Body() body: any) {
+    return { success: true, message: '2FA disabled' };
   }
 
-  @Post('reset-password')
-  async resetPassword(@Body() body: { token: string; password: string }) {
-    return { success: true, message: 'Password reset successful' };
+  @Post('logout')
+  async logout() {
+    return { success: true, message: 'Logged out' };
+  }
+
+  @Post('refresh')
+  async refreshToken() {
+    return {
+      accessToken: 'demo-access-token-refreshed',
+      refreshToken: 'demo-refresh-token',
+    };
   }
 
   @Get('me')

@@ -14,12 +14,4 @@ export class AuthService {
       },
     };
   }
-
-  async setupTwoFactor(userId: string) {
-    return {
-      secret: 'JBSWY3DPEHPK3PXP',
-      qrCodeUrl: 'otpauth://totp/CreditCheck:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=CreditCheck',
-      recoveryCodes: ['ABCD', 'EFGH', 'IJKL'],
-    };
-  }
 }
