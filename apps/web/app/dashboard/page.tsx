@@ -1,51 +1,85 @@
+const cards = [
+  { label: 'Active users', value: '1,248', trend: '+12.4%' },
+  { label: 'Report requests', value: '3,842', trend: '+8.9%' },
+  { label: 'Income checks', value: '982', trend: '+4.2%' },
+  { label: 'Security events', value: '14', trend: '-3.1%' },
+];
+
+const recentActivity = [
+  ['2FA reset for Jane Doe', '2 minutes ago'],
+  ['RecovaPro integration synced', '12 minutes ago'],
+  ['Consumer report created', '45 minutes ago'],
+  ['Password reset link sent', '1 hour ago'],
+];
+
 export default function DashboardPage() {
   return (
-    <main className="mx-auto max-w-7xl p-6">
+    <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary-600">Overview</p>
-          <h1 className="text-3xl font-bold text-slate-900">Admin dashboard</h1>
+          <p className="text-xs uppercase tracking-[0.2em] text-primary-600">Overview</p>
+          <h1 className="mt-2 text-3xl font-bold text-slate-900">Admin dashboard</h1>
         </div>
-        <button className="rounded-xl bg-primary-600 px-4 py-2.5 font-medium text-white">New report</button>
+        <button className="rounded-xl bg-primary-600 px-4 py-2.5 font-medium text-white">Create report</button>
       </div>
 
-      <section className="grid gap-4 md:grid-cols-4">
-        {[
-          ['Users', '1,248', 'active'],
-          ['Reports', '3,842', 'processed'],
-          ['Income Checks', '982', 'verified'],
-          ['Security Events', '14', 'today'],
-        ].map(([label, value, status]) => (
-          <div key={label} className="rounded-2xl border bg-white p-5 shadow-soft">
+      <div className="grid gap-4 md:grid-cols-4">
+        {cards.map(({ label, value, trend }) => (
+          <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">{label}</p>
             <div className="mt-3 flex items-end justify-between">
-              <p className="text-3xl font-bold text-slate-900">{value}</p>
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{status}</span>
+              <h3 className="text-3xl font-bold text-slate-900">{value}</h3>
+              <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">{trend}</span>
             </div>
           </div>
         ))}
-      </section>
+      </div>
 
-      <section className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border bg-white p-6 shadow-soft">
-          <h2 className="text-lg font-semibold text-slate-900">Recent activity</h2>
-          <ul className="mt-4 space-y-3 text-sm text-slate-600">
-            <li className="flex justify-between border-b pb-2"><span>2FA reset for Jane Doe</span><span>2m ago</span></li>
-            <li className="flex justify-between border-b pb-2"><span>RecovaPro integration synced</span><span>12m ago</span></li>
-            <li className="flex justify-between border-b pb-2"><span>Income verification completed</span><span>45m ago</span></li>
-            <li className="flex justify-between"><span>Password reset link generated</span><span>1h ago</span></li>
-          </ul>
-        </div>
+      <div className="mt-8 grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">Platform health</h2>
+            <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">Updated 5m ago</span>
+          </div>
 
-        <div className="rounded-2xl border bg-white p-6 shadow-soft">
-          <h2 className="text-lg font-semibold text-slate-900">Security status</h2>
-          <div className="mt-4 space-y-4 text-sm text-slate-600">
-            <div className="flex items-center justify-between rounded-xl bg-emerald-50 p-3"><span>2FA coverage</span><span className="font-bold text-emerald-700">96%</span></div>
-            <div className="flex items-center justify-between rounded-xl bg-amber-50 p-3"><span>Pending password resets</span><span className="font-bold text-amber-700">8</span></div>
-            <div className="flex items-center justify-between rounded-xl bg-red-50 p-3"><span>Locked accounts</span><span className="font-bold text-red-700">3</span></div>
+          <div className="mb-6 grid grid-cols-4 gap-4 text-sm text-slate-500">
+            <div>
+              <p>RecovaPro</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">93%</p>
+            </div>
+            <div>
+              <p>Consumer reports</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">1,240</p>
+            </div>
+            <div>
+              <p>Income checks</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">804</p>
+            </div>
+            <div>
+              <p>Security</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">96%</p>
+            </div>
+          </div>
+
+          <div className="flex h-52 items-end gap-2 rounded-2xl bg-gradient-to-tr from-indigo-100 to-sky-50 p-4">
+            {[20, 35, 42, 58, 72, 68, 82, 90].map((height, index) => (
+              <div key={index} className="w-full rounded-t-xl bg-primary-500" style={{ height: `${height}%` }} />
+            ))}
           </div>
         </div>
-      </section>
-    </main>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-900">Recent activity</h2>
+          <ul className="mt-5 space-y-4 text-sm text-slate-600">
+            {recentActivity.map(([action, time]) => (
+              <li key={action} className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-none last:pb-0">
+                <span>{action}</span>
+                <span>{time}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }
