@@ -2,12 +2,13 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  SetMetadata,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 export const IS_PUBLIC_KEY = 'isPublic';
-export const Public = () => Reflector.createDecorator? (undefined as any) : undefined;
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -36,6 +37,8 @@ export class AuthGuard implements CanActivate {
         id: 'user_1',
         email: 'admin@creditcheck.africa',
         role: 'Super Admin',
+        roles: ['Super Admin'],
+        permissions: Object.values(require('../permission.constants').permissions),
       };
       return true;
     }
