@@ -1,32 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { RolesGuard, Roles, Permissions } from '../common/guards/roles.guard';
+import { permissions } from '../common/permission.constants';
 
-@ApiTags('Roles')
+export class CreateRoleDto {
+  name!: string;
+  description?: string;
+}
+
 @Controller('api/v1/roles')
+@UseGuards(AuthGuard, RolesGuard)
 export class RolesController {
   @Get()
-  @ApiOperation({ summary: 'List all roles' })
+  @Roles('Super Admin', 'Admin')
+  @Permissions(permissions.USER_VIEW)
   findAll() {
-    return [
-      { id: 'role_1', name: 'Super Admin', description: 'Full platform access' },
-      { id: 'role_2', name: 'Admin', description: 'Administrative access' },
-      { id: 'role_3', name: 'Support Agent', description: 'Support account' },
-      { id: 'role_4', name: 'Compliance Officer', description: 'Compliance and reporting access' },
-    ];
-  }
-
-  @Post()
-  @ApiBody({ schema: { example: { name: 'Finance Operations', description: 'Handles finance operations' } } })
-  create(@Body() body: any) {
     return {
-      success: true,
-      message: 'Role created successfully',
-      role: { id: 'role_new', ...body },
+      data: [
+        { id: 'role_1', name: 'Super Admin', description: 'Full platform access' },
+        { id: 'role_2', name: 'Admin', description: 'Operational admin access' },
+        { id: 'role_3', name: 'Support Agent', description: 'Support operations access' },
+      ],
     };
   }
 
+  @Post()
+  @Roles('Super Admin')
+  @Permissions(permissions.USER_CREATE)
+  create(@Body() dto: CreateRoleDto) {
+    return { message: 'Role created', role: dto };
+  }
+
   @Patch(':id')
-  update(@Param('id') string, @Body() body: any) {
-    return { success: true, id, ...body };
+  @Roles('Super Admin')
+  @Permissions(permissions.USER_UPDATE)
+  update(@Param('id') id: string, @Body() dto: Partial<CreateRoleDto>) {
+    return { message: 'Role updated', id, ...dto };
+  }
+
+  @Get('permissions')
+  @Roles('Super Admin', 'Admin')
+  @Permissions(permissions.USER_VIEW)
+  permissionsList() {
+    return { data: Object.values(permissions) };
   }
 }
+
+import { Module } from '@nestjs/common';
+
+@Module({
+  controllers: [RolesController],
+})
+export class RolesModule {}

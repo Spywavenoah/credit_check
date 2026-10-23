@@ -1,34 +1,71 @@
 # CreditCheck Admin Platform
 
-A secure enterprise admin dashboard and integration platform for CreditChek operations, including user management, MFA, password resets, RecovaPro, Consumer Reporting, and Income Service workflows.
+A secure enterprise admin dashboard and integration platform for CreditChek-style consumer reporting, income verification, and RecovaPro orchestration.
 
 ## Stack
-- Frontend: Next.js + TypeScript + Tailwind CSS
-- Backend: NestJS + TypeScript
+
+- Frontend: Next.js 14, TypeScript, Tailwind CSS, App Router
+- Backend: NestJS, TypeScript
 - Database: PostgreSQL + Prisma
-- Auth: JWT + refresh tokens + TOTP MFA
-- Security: RBAC, audit logs, session lock
+- Auth: JWT, bcrypt/argon2, TOTP-based MFA
+- API docs: Swagger/OpenAPI
+- Security: role-based access control, audit logs, session lock, inactivity timeout
 
-## Monorepo structure
-- `apps/web` — admin dashboard frontend
-- `apps/api` — backend API
-- `prisma` — Prisma schema and migrations
+## Repository structure
 
-## Quick start
+- apps/web — admin dashboard frontend
+- apps/api — NestJS API backend
+- prisma — Prisma schema and migrations
+- .env.example — sample environment variables
 
-```bash
-npm install
-npm run dev
-```
+## Local development
 
-## Environment
-Copy `.env.example` to `.env` and update values before running the app.
+1. Install dependencies
+   ```bash
+   npm install
+   ```
 
-## Features included
-- Admin user creation and role management
-- Password reset and MFA workflows
-- First login password change enforcement
-- Auto-lock on focus loss / inactivity
-- RecovaPro integration scaffolding
-- Consumer Reporting and Income Service modules
-- Audit log tracking
+2. Configure environment
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Generate Prisma client
+   ```bash
+   npm run prisma:generate --workspace apps/api
+   ```
+
+4. Run database migrations
+   ```bash
+   npm run prisma:migrate --workspace apps/api
+   ```
+
+5. Start both apps
+   ```bash
+   npm run dev
+   ```
+
+## Key features
+
+- Enterprise admin dashboard with analytics and module views
+- Admin-created users with default temporary passwords
+- Forced password change on first login
+- 2FA enrollment and admin reset
+- Password reset links and MFA recovery flow
+- Auto-lock on inactivity and window blur
+- Role-based permissions and protected endpoint guards
+- RecovaPro integration workflow
+- Consumer reporting request tracking
+- Income verification workflow
+- Audit logging for security and admin actions
+
+## Security notes
+
+- Preferred secret storage is environment variables only
+- Access tokens should be short-lived and refresh tokens rotated
+- Session lock can be configured via inactivity timeout in the frontend
+- Sensitive operations are logged with user agent and IP metadata when available
+
+## License
+
+This project is intended for internal enterprise use and is not production-hardened without a full deployment and security review.

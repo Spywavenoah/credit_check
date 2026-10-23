@@ -1,29 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { RolesGuard, Roles, Permissions } from '../common/guards/roles.guard';
+import { permissions } from '../common/permission.constants';
 
-@ApiTags('Income Service')
+export class IncomeVerificationDto {
+  applicantId!: string;
+  employerName!: string;
+}
+
 @Controller('api/v1/income-service')
+@UseGuards(AuthGuard, RolesGuard)
 export class IncomeServiceController {
   @Post('verification')
-  createVerification(@Body() body: any) {
-    return { success: true, verification: { id: 'inc_1', reference: 'INC-101', status: 'pending', ...body } };
+  @Roles('Super Admin', 'Admin', 'Finance / Operations')
+  @Permissions(permissions.INCOME_UPDATE)
+  createVerification(@Body() dto: IncomeVerificationDto) {
+    return { message: 'Income verification initiated', reference: 'INC-201', payload: dto };
   }
 
   @Get('verification')
-  listVerification(@Query('status') status?: string) {
-    return [
-      { id: 'inc_1', reference: 'INC-101', status: status || 'pending' },
-      { id: 'inc_2', reference: 'INC-102', status: 'approved' },
-    ];
+  @Roles('Super Admin', 'Admin', 'Finance / Operations')
+  @Permissions(permissions.INCOME_VIEW)
+  listVerifications() {
+    return { data: [{ id: 'INC-201', status: 'approved' }] };
   }
 
   @Get('verification/:id')
-  getVerification(@Param('id') string) {
-    return { id, reference: 'INC-101', status: 'approved', payload: { verified: true } };
+  @Roles('Super Admin', 'Admin', 'Finance / Operations')
+  @Permissions(permissions.INCOME_VIEW)
+  getVerification(@Param('id') id: string) {
+    return { id, status: 'approved', employerName: 'CreditCheck Labs' };
   }
 
   @Patch('verification/:id/status')
-  updateStatus(@Param('id') string, @Body() body: any) {
-    return { success: true, id, status: body.status || 'approved' };
+  @Roles('Super Admin', 'Admin', 'Finance / Operations')
+  @Permissions(permissions.INCOME_UPDATE)
+  updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    return { message: 'Verification status updated', id, status };
   }
 }
+
+import { Module } from '@nestjs/common';
+
+@Module({
+  controllers: [IncomeServiceController],
+})
+export class IncomeServiceModule {}

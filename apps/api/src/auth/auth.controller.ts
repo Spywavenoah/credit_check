@@ -1,87 +1,138 @@
-import { Controller, Get, Post, Body, Req, UnauthorizedException } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyTwoFactorDto } from './dto';
+import { Injectable, Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Public, AuthGuard } from '../common/guards/auth.guard';
 
-@ApiTags('Auth')
-@Controller('api/v1/auth')
-export class AuthController {
-  @Post('login')
-  @ApiBody({ type: LoginDto })
-  async login(@Body() dto: LoginDto) {
+export class LoginDto {
+  email!: string;
+  password!: string;
+}
+
+export class RefreshDto {
+  refreshToken!: string;
+}
+
+export class ForgotPasswordDto {
+  email!: string;
+}
+
+export class ResetPasswordDto {
+  token!: string;
+  password!: string;
+}
+
+@Injectable()
+export class AuthService {
+  async login(dto: LoginDto) {
     return {
+      message: 'Login successful',
+      user: { email: dto.email, role: 'Super Admin' },
       accessToken: 'demo-access-token',
       refreshToken: 'demo-refresh-token',
-      user: {
-        id: 'user_1',
-        email: dto.email,
-        mustChangePassword: true,
-        requiresTwoFactor: true,
-      },
     };
   }
 
+  async refresh(dto: RefreshDto) {
+    return {
+      accessToken: 'demo-access-token',
+      refreshToken: dto.refreshToken || 'demo-refresh-token',
+    };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    return {
+      message: `Password reset email sent to ${dto.email}`,
+      resetToken: 'demo-reset-token',
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    return {
+      message: 'Password reset successful',
+      token: dto.token,
+    };
+  }
+
+  async setup2FA() {
+    return {
+      message: '2FA setup initiated',
+      secret: 'JBSWY3DPEHPK3PXP',
+      otpauthUrl: 'otpauth://totp/CreditCheck:admin@creditcheck.africa?secret=JBSWY3DPEHPK3PXP&issuer=CreditCheck',
+    };
+  }
+
+  async verify2FA(code: string) {
+    return {
+      message: '2FA verified',
+      valid: code.length >= 6,
+    };
+  }
+
+  async disable2FA() {
+    return { message: '2FA disabled' };
+  }
+
+  async me() {
+    return {
+      id: 'user_1',
+      name: 'System Admin',
+      email: 'admin@creditcheck.africa',
+      role: 'Super Admin',
+      status: 'ACTIVE',
+      isDefaultPassword: false,
+      isTwoFactorEnabled: true,
+    };
+  }
+}
+
+@Controller('api/v1/auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Public()
+  @Post('login')
+  async login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
+
+  @Public()
+  @Post('refresh')
+  async refresh(@Body() dto: RefreshDto) {
+    return this.authService.refresh(dto);
+  }
+
+  @Public()
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return {
-      success: true,
-      message: `Password reset link generated for ${dto.email}`,
-    };
+    return this.authService.forgotPassword(dto);
   }
 
+  @Public()
   @Post('reset-password')
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    return {
-      success: true,
-      message: 'Password reset successful',
-    };
-  }
-
-  @Post('verify-2fa')
-  async verify2fa(@Body() dto: VerifyTwoFactorDto) {
-    return {
-      success: true,
-      message: 'Two-factor verification successful',
-    };
+    return this.authService.resetPassword(dto);
   }
 
   @Post('setup-2fa')
-  async setup2fa(@Body() body: { userId: string }) {
-    return {
-      secret: 'JBSWY3DPEHPK3PXP',
-      qrCodeUrl: 'otpauth://totp/CreditCheck:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=CreditCheck',
-      recoveryCodes: ['ABCD', 'EFGH', 'IJKL'],
-    };
+  async setup2FA() {
+    return this.authService.setup2FA();
+  }
+
+  @Post('verify-2fa')
+  async verify2FA(@Body('code') code: string) {
+    return this.authService.verify2FA(code);
   }
 
   @Post('disable-2fa')
-  async disable2fa(@Body() body: any) {
-    return { success: true, message: '2FA disabled' };
+  async disable2FA() {
+    return this.authService.disable2FA();
   }
 
   @Post('logout')
   async logout() {
-    return { success: true, message: 'Logged out' };
-  }
-
-  @Post('refresh')
-  async refreshToken() {
-    return {
-      accessToken: 'demo-access-token-refreshed',
-      refreshToken: 'demo-refresh-token',
-    };
+    return { message: 'Logged out successfully' };
   }
 
   @Get('me')
-  getCurrentUser(@Req() req: any) {
-    if (!req.user) {
-      throw new UnauthorizedException('Unauthorized');
-    }
-
-    return {
-      id: req.user.id,
-      email: req.user.email,
-      name: 'System Admin',
-      role: 'Super Admin',
-    };
+  async me() {
+    return this.authService.me();
   }
 }

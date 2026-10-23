@@ -1,41 +1,70 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { RolesGuard, Roles, Permissions } from '../common/guards/roles.guard';
+import { permissions } from '../common/permission.constants';
 
-@ApiTags('Security')
+export class ChangePasswordDto {
+  currentPassword!: string;
+  newPassword!: string;
+}
+
+export class Enable2FADto {
+  code!: string;
+}
+
 @Controller('api/v1/security')
+@UseGuards(AuthGuard, RolesGuard)
 export class SecurityController {
   @Post('change-password')
-  changePassword(@Body() body: any) {
-    return { success: true, message: 'Password updated successfully' };
+  @Roles('Super Admin', 'Admin', 'Support Agent', 'Compliance Officer', 'Finance / Operations', 'Viewer')
+  @Permissions(permissions.SECURITY_MANAGE)
+  changePassword(@Body() dto: ChangePasswordDto) {
+    return { message: 'Password changed', passwordStrength: 'strong' };
   }
 
   @Post('enable-2fa')
-  enable2fa(@Body() body: any) {
-    return { success: true, secret: 'KVKFKRCPNZQ2GJQZ', qrCodeUrl: 'otpauth://totp/CreditCheck:demo' };
+  @Roles('Super Admin', 'Admin', 'Support Agent', 'Compliance Officer', 'Finance / Operations', 'Viewer')
+  @Permissions(permissions.SECURITY_MANAGE)
+  enable2FA(@Body() dto: Enable2FADto) {
+    return { message: '2FA enabled', code: dto.code };
   }
 
   @Post('confirm-2fa')
-  confirm2fa(@Body() body: any) {
-    return { success: true, message: '2FA confirmed' };
+  @Roles('Super Admin', 'Admin', 'Support Agent', 'Compliance Officer', 'Finance / Operations', 'Viewer')
+  @Permissions(permissions.SECURITY_MANAGE)
+  confirm2FA(@Body('code') code: string) {
+    return { message: '2FA confirmed', valid: code.length >= 6 };
   }
 
   @Post('reset-2fa')
-  reset2fa(@Body() body: any) {
-    return { success: true, message: '2FA reset successful' };
+  @Roles('Super Admin', 'Admin')
+  @Permissions(permissions.USER_RESET_MFA)
+  reset2FA() {
+    return { message: '2FA reset successfully' };
   }
 
   @Get('session-status')
+  @Roles('Super Admin', 'Admin')
+  @Permissions(permissions.SECURITY_MANAGE)
   sessionStatus() {
     return {
-      activeSessions: 2,
-      lastActivity: new Date().toISOString(),
-      idleTimeoutMinutes: 15,
-      autoLockEnabled: true,
+      activeSessions: 3,
+      lastLogin: new Date().toISOString(),
+      mfaRequired: true,
     };
   }
 
   @Post('logout-all')
+  @Roles('Super Admin', 'Admin')
+  @Permissions(permissions.SECURITY_MANAGE)
   logoutAll() {
-    return { success: true, message: 'All sessions logged out' };
+    return { message: 'All sessions revoked' };
   }
 }
+
+import { Module } from '@nestjs/common';
+
+@Module({
+  controllers: [SecurityController],
+})
+export class SecurityModule {}
