@@ -1,0 +1,37 @@
+export const permissions = {
+  USER_VIEW: 'user:view',
+  USER_CREATE: 'user:create',
+  USER_UPDATE: 'user:update',
+  USER_DELETE: 'user:delete',
+  USER_RESET_MFA: 'user:reset_mfa',
+  REPORT_VIEW: 'report:view',
+  REPORT_CREATE: 'report:create',
+  REPORT_UPDATE: 'report:update',
+  INCOME_VIEW: 'income:view',
+  INCOME_UPDATE: 'income:update',
+  SECURITY_MANAGE: 'security:manage',
+  AUDIT_VIEW: 'audit:view',
+  INTEGRATION_MANAGE: 'integration:manage',
+};
+
+export const rolePermissions = {
+  'Super Admin': Object.values(permissions),
+  Admin: [
+    permissions.USER_VIEW,
+    permissions.USER_CREATE,
+    permissions.USER_UPDATE,
+    permissions.USER_RESET_MFA,
+    permissions.REPORT_VIEW,
+    permissions.REPORT_CREATE,
+    permissions.REPORT_UPDATE,
+    permissions.INCOME_VIEW,
+    permissions.INCOME_UPDATE,
+    permissions.SECURITY_MANAGE,
+    permissions.AUDIT_VIEW,
+    permissions.INTEGRATION_MANAGE,
+  ],
+  'Support Agent': [permissions.USER_VIEW, permissions.REPORT_VIEW, permissions.INCOME_VIEW],
+  'Compliance Officer': [permissions.REPORT_VIEW, permissions.AUDIT_VIEW, permissions.SECURITY_MANAGE],
+  'Finance / Operations': [permissions.REPORT_VIEW, permissions.INCOME_VIEW, permissions.INCOME_UPDATE],
+  Viewer: [permissions.USER_VIEW],
+};
